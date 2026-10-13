@@ -40,9 +40,18 @@ app.get('/health', (_req, res) => res.redirect('/api/health'));
 
 app.use('/api', routes);
 
-// ---- serve the built React frontend (web/dist) when it exists -------------
-const distDir = path.resolve(__dirname, '..', '..', 'web', 'dist');
-if (fs.existsSync(path.join(distDir, 'index.html'))) {
+// ---- serve the built React frontend when it exists -------------------------
+const candidateDistDirs = [
+  path.resolve(__dirname, '..', 'public'),
+  path.resolve(__dirname, '..', '..', 'web', 'dist'),
+  path.resolve(__dirname, '..', 'dist'),
+  path.resolve(process.cwd(), 'web', 'dist'),
+  path.resolve(process.cwd(), 'public'),
+  path.resolve(process.cwd(), 'dist'),
+];
+const distDir = candidateDistDirs.find((dir) => fs.existsSync(path.join(dir, 'index.html')));
+
+if (distDir) {
   app.use(express.static(distDir));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
