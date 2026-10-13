@@ -1,0 +1,17 @@
+{
+  "name": "canteen-preorder-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack Canteen Pre-Order Management System",
+  "scripts": {
+    "build": "npm --prefix web install && npm --prefix web run build && npm --prefix server install",
+    "build:web": "npm --prefix web install && npm --prefix web run build",
+    "build:server": "npm --prefix server install",
+    "start": "node server/src/index.js",
+    "seed": "node server/src/seed.js",
+    "smoke": "node server/src/smoke-test.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

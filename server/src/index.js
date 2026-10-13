@@ -11,6 +11,17 @@ const routes = require('./routes');
 
 db.ensureSchema();
 
+// Auto-seed demo data if database has no users (e.g. fresh Render deployment)
+try {
+  const userCount = db.get('SELECT COUNT(*) AS count FROM users');
+  if (!userCount || Number(userCount.count) === 0) {
+    console.log('Database has no users — auto-seeding demo accounts and menu...');
+    require('./seed');
+  }
+} catch (seedErr) {
+  console.error('[seed warning]', seedErr.message);
+}
+
 const app = express();
 const PORT = Number(process.env.PORT || 4000);
 
@@ -18,21 +29,27 @@ app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json({ limit: '1mb' }));
 
 app.use((req, _res, next) => {
-  if (req.path !== '/api/health') {
+  if (req.path !== '/api/health' && req.path !== '/health') {
     console.log(`${new Date().toISOString()}  ${req.method} ${req.originalUrl}`);
   }
   next();
 });
 
+// Health check endpoint aliases
+app.get('/health', (_req, res) => res.redirect('/api/health'));
+
 app.use('/api', routes);
 
 // ---- serve the built React frontend (web/dist) when it exists -------------
-const distDir = path.join(__dirname, '..', '..', 'web', 'dist');
+const distDir = path.resolve(__dirname, '..', '..', 'web', 'dist');
 if (fs.existsSync(path.join(distDir, 'index.html'))) {
   app.use(express.static(distDir));
-  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(distDir, 'index.html'));
+  });
 } else {
-  app.get('/', (_res, res) =>
+  app.get('/', (_req, res) =>
     res
       .status(200)
       .send(
@@ -52,8 +69,8 @@ app.use((err, _req, res, _next) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`\n  Canteen Pre-Order API  ->  http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n  Canteen Pre-Order API  ->  http://0.0.0.0:${PORT}`);
     console.log(`  SQLite driver: ${db.driver}   database: ${db.DB_PATH}\n`);
   });
 }

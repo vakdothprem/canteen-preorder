@@ -197,3 +197,33 @@ staff cannot touch users or reports, and admins cannot strip their own admin rig
   page. Swap `notify()` in `routes.js` for an SMTP/SMS/WhatsApp sender to add
   real delivery — every notification is already funnelled through that one helper.
 * **Service fee** is configurable with `SERVICE_FEE_PERCENT` in `.env` (0 by default).
+
+---
+
+## 8. Deployment on Render
+
+This project includes a `render.yaml` blueprint ready for deployment on [Render](https://render.com).
+
+### Option A — Separate Services (Current Setup)
+1. **Backend Web Service (`canteen-preorder-api`)**:
+   - **Environment**: Node
+   - **Build Command**: `npm run build`
+   - **Start Command**: `npm run start`
+   - **Health Check Path**: `/api/health`
+   - **Environment Variables**:
+     - `NODE_VERSION`: `22`
+     - `PORT`: `10000`
+     - `CORS_ORIGIN`: `*`
+     - `JWT_SECRET`: (Generate random string)
+2. **Frontend Static Site (`canteen-preorder-frontend`)**:
+   - **Build Command**: `cd web && npm install && npm run build`
+   - **Publish Directory**: `./web/dist`
+   - **Environment Variables**:
+     - `VITE_API_URL`: `https://canteen-preorder-api.onrender.com`
+   - **Routes (Rewrite rule for client routing)**:
+     - Type: `Rewrite`
+     - Source: `/*`
+     - Destination: `/index.html`
+
+### Option B — Single Fullstack Service
+Deploy as a single Node Web Service using the root `npm run build` and `npm run start`. The Express server automatically serves the built frontend (`web/dist`) and proxies all client routes to `index.html`.

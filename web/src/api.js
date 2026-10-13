@@ -18,21 +18,32 @@ export const setToken = (token) => {
   }
 };
 
+export const getApiBase = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('canteen-preorder-frontend')) {
+    return 'https://canteen-preorder-api.onrender.com';
+  }
+  return '';
+};
+
 export async function api(path, options = {}) {
   const { method = 'GET', body, auth = true } = options;
   const headers = { 'Content-Type': 'application/json' };
   const token = getToken();
   if (auth && token) headers.Authorization = `Bearer ${token}`;
 
+  const base = getApiBase();
   let res;
   try {
-    res = await fetch(`/api${path}`, {
+    res = await fetch(`${base}/api${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch (_e) {
-    throw new Error('Cannot reach the server. Is the backend running on port 4000?');
+    throw new Error('Cannot reach the server. Please check your backend connection.');
   }
 
   let payload = null;
