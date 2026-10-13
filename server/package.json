@@ -1,0 +1,22 @@
+{
+  "name": "canteen-preorder-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API + SQLite database for the Canteen Pre-Order Management System",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "seed": "node src/seed.js",
+    "reset": "node src/seed.js --reset",
+    "smoke": "node src/smoke-test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
